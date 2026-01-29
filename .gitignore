@@ -1,0 +1,8 @@
+*.pyc
+__pycache__/
+.DS_Store
+attendance.db
+*.jpg
+*.png
+venv/
+.env
