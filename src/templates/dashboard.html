@@ -1,0 +1,778 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Attendance Dashboard</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      :root {
+        --bg-dark: #0a0a0f;
+        --bg-card: #12121a;
+        --bg-card-hover: #1a1a25;
+        --accent: #6366f1;
+        --accent-glow: rgba(99, 102, 241, 0.3);
+        --success: #22c55e;
+        --warning: #f59e0b;
+        --text: #f1f5f9;
+        --text-muted: #64748b;
+        --border: #1e293b;
+      }
+
+      body {
+        font-family: "DM Sans", sans-serif;
+        background: var(--bg-dark);
+        color: var(--text);
+        min-height: 100vh;
+      }
+
+      .container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 24px;
+      }
+
+      /* Header */
+      .header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 32px;
+        padding-bottom: 24px;
+        border-bottom: 1px solid var(--border);
+      }
+
+      .logo {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+      }
+
+      .logo-icon {
+        width: 48px;
+        height: 48px;
+        background: linear-gradient(135deg, var(--accent), #8b5cf6);
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+      }
+
+      .logo h1 {
+        font-size: 24px;
+        font-weight: 700;
+      }
+
+      .logo p {
+        color: var(--text-muted);
+        font-size: 14px;
+      }
+
+      .header-info {
+        text-align: right;
+      }
+
+      .date {
+        font-size: 18px;
+        font-weight: 600;
+      }
+
+      .time {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 32px;
+        font-weight: 700;
+        color: var(--accent);
+      }
+
+      /* Main Grid */
+      .main-grid {
+        display: grid;
+        grid-template-columns: 1fr 400px;
+        gap: 24px;
+      }
+
+      @media (max-width: 1024px) {
+        .main-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      /* Camera Section */
+      .camera-section {
+        background: var(--bg-card);
+        border-radius: 20px;
+        overflow: hidden;
+        border: 1px solid var(--border);
+      }
+
+      .camera-header {
+        padding: 20px 24px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid var(--border);
+      }
+
+      .camera-status {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .status-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: var(--text-muted);
+      }
+
+      .status-dot.active {
+        background: var(--success);
+        box-shadow: 0 0 10px var(--success);
+        animation: pulse 2s infinite;
+      }
+
+      @keyframes pulse {
+        0%,
+        100% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0.5;
+        }
+      }
+
+      .camera-feed {
+        position: relative;
+        aspect-ratio: 16/9;
+        background: #000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .camera-feed img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+      }
+
+      .camera-placeholder {
+        text-align: center;
+        color: var(--text-muted);
+      }
+
+      .camera-placeholder svg {
+        width: 64px;
+        height: 64px;
+        margin-bottom: 16px;
+        opacity: 0.5;
+      }
+
+      .camera-controls {
+        padding: 20px 24px;
+        display: flex;
+        gap: 12px;
+      }
+
+      /* Buttons */
+      .btn {
+        padding: 12px 24px;
+        border-radius: 10px;
+        font-family: "DM Sans", sans-serif;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        border: none;
+        transition: all 0.2s;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .btn-primary {
+        background: var(--accent);
+        color: white;
+      }
+
+      .btn-primary:hover {
+        background: #4f46e5;
+        transform: translateY(-1px);
+      }
+
+      .btn-secondary {
+        background: var(--bg-card-hover);
+        color: var(--text);
+        border: 1px solid var(--border);
+      }
+
+      .btn-secondary:hover {
+        background: #252535;
+      }
+
+      .btn-success {
+        background: var(--success);
+        color: white;
+      }
+
+      .btn-warning {
+        background: var(--warning);
+        color: black;
+      }
+
+      .btn-danger {
+        background: #ef4444;
+        color: white;
+      }
+
+      .btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+
+      /* Sidebar */
+      .sidebar {
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+      }
+
+      .card {
+        background: var(--bg-card);
+        border-radius: 16px;
+        border: 1px solid var(--border);
+        overflow: hidden;
+      }
+
+      .card-header {
+        padding: 16px 20px;
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .card-header h3 {
+        font-size: 16px;
+        font-weight: 600;
+      }
+
+      .badge {
+        background: var(--accent);
+        color: white;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 14px;
+        font-weight: 600;
+      }
+
+      /* Attendance List */
+      .attendance-list {
+        max-height: 400px;
+        overflow-y: auto;
+      }
+
+      .attendance-list::-webkit-scrollbar {
+        width: 6px;
+      }
+
+      .attendance-list::-webkit-scrollbar-track {
+        background: var(--bg-dark);
+      }
+
+      .attendance-list::-webkit-scrollbar-thumb {
+        background: var(--border);
+        border-radius: 3px;
+      }
+
+      .attendance-item {
+        padding: 14px 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid var(--border);
+        transition: background 0.2s;
+      }
+
+      .attendance-item:hover {
+        background: var(--bg-card-hover);
+      }
+
+      .attendance-item:last-child {
+        border-bottom: none;
+      }
+
+      .attendance-item.new {
+        animation: highlight 2s ease-out;
+      }
+
+      @keyframes highlight {
+        0% {
+          background: rgba(34, 197, 94, 0.3);
+        }
+        100% {
+          background: transparent;
+        }
+      }
+
+      .student-info {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .student-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        background: linear-gradient(135deg, var(--accent), #8b5cf6);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        font-size: 14px;
+      }
+
+      .student-name {
+        font-weight: 500;
+      }
+
+      .student-id {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 12px;
+        color: var(--text-muted);
+      }
+
+      .check-time {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 13px;
+        color: var(--success);
+      }
+
+      .empty-state {
+        padding: 40px 20px;
+        text-align: center;
+        color: var(--text-muted);
+      }
+
+      .empty-state svg {
+        width: 48px;
+        height: 48px;
+        margin-bottom: 12px;
+        opacity: 0.5;
+      }
+
+      /* Export Section */
+      .export-section {
+        padding: 20px;
+      }
+
+      .export-buttons {
+        display: flex;
+        gap: 12px;
+      }
+
+      .export-buttons .btn {
+        flex: 1;
+        justify-content: center;
+      }
+
+      /* Recent Scan Toast */
+      .toast {
+        position: fixed;
+        bottom: 24px;
+        right: 24px;
+        background: var(--bg-card);
+        border: 2px solid var(--success);
+        border-radius: 16px;
+        padding: 16px 24px;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        box-shadow:
+          0 10px 40px rgba(0, 0, 0, 0.4),
+          0 0 20px rgba(34, 197, 94, 0.2);
+        transform: translateY(120px);
+        opacity: 0;
+        transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        z-index: 1000;
+      }
+
+      .toast.show {
+        transform: translateY(0);
+        opacity: 1;
+      }
+
+      .toast-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        background: var(--success);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+      }
+
+      .toast-content h4 {
+        font-weight: 600;
+        font-size: 16px;
+      }
+
+      .toast-content p {
+        font-size: 13px;
+        color: var(--text-muted);
+        font-family: "JetBrains Mono", monospace;
+      }
+
+      /* Course Selector */
+      .course-input {
+        display: flex;
+        gap: 12px;
+        margin-bottom: 24px;
+      }
+
+      .course-input input {
+        flex: 1;
+        padding: 12px 16px;
+        border-radius: 10px;
+        border: 1px solid var(--border);
+        background: var(--bg-card);
+        color: var(--text);
+        font-family: "DM Sans", sans-serif;
+        font-size: 14px;
+      }
+
+      .course-input input:focus {
+        outline: none;
+        border-color: var(--accent);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <!-- Header -->
+      <header class="header">
+        <div class="logo">
+          <div class="logo-icon">🎓</div>
+          <div>
+            <h1>Attendance Dashboard</h1>
+            <p id="courseName">MSc Computer Science</p>
+          </div>
+        </div>
+        <div class="header-info">
+          <div class="date" id="currentDate"></div>
+          <div class="time" id="currentTime"></div>
+        </div>
+      </header>
+
+      <!-- Main Grid -->
+      <div class="main-grid">
+        <!-- Camera Section -->
+        <div class="camera-section">
+          <div class="camera-header">
+            <div class="camera-status">
+              <span class="status-dot" id="statusDot"></span>
+              <span id="statusText">Camera Off</span>
+            </div>
+            <span id="studentCount" style="color: var(--text-muted)"
+              >0 students today</span
+            >
+          </div>
+
+          <div class="camera-feed" id="cameraFeed">
+            <div class="camera-placeholder" id="placeholder">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"
+                />
+              </svg>
+              <p>Click "Start Scanning" to begin</p>
+            </div>
+            <img id="videoStream" style="display: none" />
+          </div>
+
+          <div class="camera-controls">
+            <button
+              class="btn btn-primary"
+              id="startBtn"
+              onclick="startScanning()"
+            >
+              <svg
+                width="16"
+                height="16"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                viewBox="0 0 24 24"
+              >
+                <polygon points="5 3 19 12 5 21 5 3"></polygon>
+              </svg>
+              Start Scanning
+            </button>
+            <button
+              class="btn btn-secondary"
+              id="stopBtn"
+              onclick="stopScanning()"
+              disabled
+            >
+              <svg
+                width="16"
+                height="16"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                viewBox="0 0 24 24"
+              >
+                <rect x="6" y="6" width="12" height="12"></rect>
+              </svg>
+              Stop
+            </button>
+            <button
+              class="btn btn-danger"
+              onclick="clearToday()"
+              style="margin-left: auto"
+            >
+              🗑️ Reset
+            </button>
+          </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="sidebar">
+          <!-- Attendance List -->
+          <div class="card">
+            <div class="card-header">
+              <h3>Today's Attendance</h3>
+              <span class="badge" id="countBadge">0</span>
+            </div>
+            <div class="attendance-list" id="attendanceList">
+              <div class="empty-state">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
+                  />
+                </svg>
+                <p>No students recorded yet</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Export -->
+          <div class="card">
+            <div class="card-header">
+              <h3>Export Report</h3>
+            </div>
+            <div class="export-section">
+              <div class="export-buttons">
+                <button class="btn btn-success" onclick="exportPDF()">
+                  📄 PDF
+                </button>
+                <button class="btn btn-warning" onclick="exportExcel()">
+                  📊 Excel
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast">
+      <div class="toast-icon">✓</div>
+      <div class="toast-content">
+        <h4 id="toastTitle">Student Marked</h4>
+        <p id="toastSubtitle">24253069</p>
+      </div>
+    </div>
+
+    <script>
+      let isScanning = false;
+      let lastScanId = null;
+      let lastCount = 0;
+
+      // Update time
+      function updateTime() {
+        const now = new Date();
+        document.getElementById("currentDate").textContent =
+          now.toLocaleDateString("en-IE", {
+            weekday: "long",
+            day: "numeric",
+            month: "long",
+            year: "numeric",
+          });
+        document.getElementById("currentTime").textContent =
+          now.toLocaleTimeString("en-IE", {
+            hour: "2-digit",
+            minute: "2-digit",
+            second: "2-digit",
+          });
+      }
+      setInterval(updateTime, 1000);
+      updateTime();
+
+      // Start scanning
+      function startScanning() {
+        fetch("/start_scanning", { method: "POST" })
+          .then((response) => response.json())
+          .then((data) => {
+            if (data.success) {
+              isScanning = true;
+              document.getElementById("statusDot").classList.add("active");
+              document.getElementById("statusText").textContent =
+                "Scanning Active";
+              document.getElementById("startBtn").disabled = true;
+              document.getElementById("stopBtn").disabled = false;
+              document.getElementById("placeholder").style.display = "none";
+
+              const stream = document.getElementById("videoStream");
+              stream.src = "/video_feed?" + new Date().getTime();
+              stream.style.display = "block";
+            }
+          });
+      }
+
+      // Stop scanning
+      function stopScanning() {
+        fetch("/stop_scanning", { method: "POST" })
+          .then((response) => response.json())
+          .then((data) => {
+            isScanning = false;
+            document.getElementById("statusDot").classList.remove("active");
+            document.getElementById("statusText").textContent = "Camera Off";
+            document.getElementById("startBtn").disabled = false;
+            document.getElementById("stopBtn").disabled = true;
+
+            document.getElementById("videoStream").style.display = "none";
+            document.getElementById("videoStream").src = "";
+            document.getElementById("placeholder").style.display = "block";
+          });
+      }
+
+      // Load attendance
+      function loadAttendance() {
+        fetch("/attendance")
+          .then((response) => response.json())
+          .then((data) => {
+            const list = document.getElementById("attendanceList");
+            const count = data.records.length;
+
+            document.getElementById("countBadge").textContent = count;
+            document.getElementById("studentCount").textContent =
+              count + " students today";
+
+            if (count === 0) {
+              list.innerHTML = `
+                            <div class="empty-state">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                                </svg>
+                                <p>No students recorded yet</p>
+                            </div>
+                        `;
+              lastCount = 0;
+              return;
+            }
+
+            // Check if new student added
+            const isNewStudent = count > lastCount;
+            lastCount = count;
+
+            list.innerHTML = data.records
+              .map(
+                (r, i) => `
+                        <div class="attendance-item ${i === count - 1 && isNewStudent ? "new" : ""}">
+                            <div class="student-info">
+                                <div class="student-avatar">${i + 1}</div>
+                                <div>
+                                    <div class="student-name">${r.name || "Unknown"}</div>
+                                    <div class="student-id">${r.student_id}</div>
+                                </div>
+                            </div>
+                            <div class="check-time">${r.time}</div>
+                        </div>
+                    `,
+              )
+              .join("");
+
+            // Show toast for new scan
+            if (data.records.length > 0) {
+              const latest = data.records[data.records.length - 1];
+              if (latest.student_id !== lastScanId) {
+                lastScanId = latest.student_id;
+                showToast(latest.name, latest.student_id);
+
+                // Scroll to bottom
+                list.scrollTop = list.scrollHeight;
+              }
+            }
+          });
+      }
+
+      // Show toast notification
+      function showToast(name, id) {
+        const toast = document.getElementById("toast");
+        document.getElementById("toastTitle").textContent = name || "Student";
+        document.getElementById("toastSubtitle").textContent =
+          id + " marked present";
+        toast.classList.add("show");
+        setTimeout(() => toast.classList.remove("show"), 3000);
+      }
+
+      // Clear today's attendance
+      function clearToday() {
+        if (
+          confirm(
+            "Clear all attendance records for today? This cannot be undone.",
+          )
+        ) {
+          fetch("/clear_today", { method: "POST" }).then(() => {
+            lastScanId = null;
+            lastCount = 0;
+            loadAttendance();
+          });
+        }
+      }
+
+      // Export functions
+      function exportPDF() {
+        window.location.href = "/export/pdf";
+      }
+
+      function exportExcel() {
+        window.location.href = "/export/excel";
+      }
+
+      // Poll for attendance updates
+      setInterval(loadAttendance, 1500);
+      loadAttendance();
+    </script>
+  </body>
+</html>
